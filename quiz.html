@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — HomeOften</title>
+<meta name="description" content="Take a 90-second HomeOften quiz — we'll match you to three gadgets.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,0..100&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF6EE; --bg-soft: #E8E5D8; --bg-deep: #D4D2C2; --paper: #FFFFFF;
+    --sage: #6B8A6E; --sage-dark: #4F6B53; --terracotta: #C7785C;
+    --ink: #2A2823; --text: #2A2823; --text-muted: #5C544D; --text-faint: #A09891;
+    --line: #DDD5C5; --line-soft: #ECE5D6; --ok: #4F6B53; --err: #B8493B;
+    --serif: 'Fraunces', serif;
+    --sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); color: var(--text); background: var(--bg); line-height: 1.55; font-weight: 400; font-size: 15px; -webkit-font-smoothing: antialiased; }
+  img { display: block; max-width: 100%; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  ::selection { background: var(--sage); color: #fff; }
+  [hidden] { display: none !important; }
+
+  .topbar { background: var(--bg); border-bottom: 1px solid var(--line-soft); padding: 16px clamp(20px, 4vw, 56px); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .back { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); transition: color 0.2s, gap 0.3s; }
+  .back:hover { color: var(--sage); gap: 16px; }
+  .logo { font-family: var(--serif); font-variation-settings: 'opsz' 144, 'wght' 500, 'SOFT' 30; font-size: 30px; line-height: 1; text-align: center; }
+  .logo-dot { color: var(--sage); }
+  .progress-bar { height: 3px; background: var(--line-soft); overflow: hidden; }
+  .progress-bar > div { height: 100%; background: var(--sage); width: 0; transition: width 0.45s cubic-bezier(.2,.7,.2,1); }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 40px); }
+  .quiz-eyebrow { font-size: 11px; letter-spacing: 0.32em; color: var(--sage); text-transform: uppercase; margin-bottom: 14px; text-align: center; font-weight: 600; }
+  .quiz-title { font-family: var(--serif); font-variation-settings: 'opsz' 144, 'wght' 500, 'SOFT' 30; font-size: clamp(36px, 5vw, 56px); line-height: 1.02; text-align: center; margin-bottom: 18px; letter-spacing: -0.015em; }
+  .quiz-lead { font-size: 16px; color: var(--text-muted); text-align: center; line-height: 1.7; max-width: 56ch; margin: 0 auto 40px; }
+  .quiz-start { display: block; margin: 0 auto; padding: 16px 36px; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; border: 1px solid var(--ink); transition: all 0.2s; }
+  .quiz-start:hover { background: var(--sage); border-color: var(--sage); }
+
+  .quiz-step { background: var(--paper); border: 1px solid var(--line); padding: clamp(28px, 4vw, 48px); }
+  .step-meta { font-size: 11px; letter-spacing: 0.24em; color: var(--sage); text-transform: uppercase; font-weight: 600; margin-bottom: 14px; }
+  .quiz-q { font-family: var(--serif); font-variation-settings: 'opsz' 72, 'wght' 500; font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; margin-bottom: 28px; letter-spacing: -0.01em; }
+  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 540px) { .quiz-options { grid-template-columns: 1fr; } }
+  .quiz-option { text-align: left; background: var(--bg); border: 1px solid var(--line); padding: 16px 20px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.2s; font-size: 14.5px; font-weight: 500; }
+  .quiz-option:hover { border-color: var(--sage); background: var(--bg-soft); transform: translateX(3px); }
+  .quiz-option-emoji { font-size: 18px; flex-shrink: 0; width: 22px; text-align: center; }
+  .quiz-back { margin-top: 24px; font-size: 11px; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+  .quiz-back:hover { color: var(--sage); }
+
+  .result { background: var(--paper); border: 1px solid var(--line); padding: clamp(28px, 4vw, 48px); }
+  .result-tag { display: inline-block; background: var(--terracotta); color: #fff; font-size: 11px; letter-spacing: 0.24em; padding: 6px 14px; text-transform: uppercase; margin-bottom: 18px; font-weight: 600; }
+  .result-title { font-family: var(--serif); font-variation-settings: 'opsz' 144, 'wght' 500, 'SOFT' 30; font-size: clamp(30px, 4vw, 46px); line-height: 1.05; margin-bottom: 14px; letter-spacing: -0.015em; }
+  .result-why { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; max-width: 56ch; }
+  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  @media (max-width: 600px) { .result-grid { grid-template-columns: 1fr; } }
+  .result-card { border: 1px solid var(--line); overflow: hidden; background: var(--bg); display: block; transition: transform 0.3s, box-shadow 0.3s; }
+  .result-card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 0 var(--sage); }
+  .result-card-img { aspect-ratio: 1/1; overflow: hidden; background: var(--bg-soft); }
+  .result-card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .result-card-body { padding: 14px; }
+  .result-card-cat { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 5px; font-weight: 600; }
+  .result-card-name { font-family: var(--serif); font-variation-settings: 'opsz' 36, 'wght' 500; font-size: 15px; line-height: 1.2; margin-bottom: 8px; }
+  .result-card-price { font-family: var(--serif); font-variation-settings: 'opsz' 72, 'wght' 600; font-size: 17px; color: var(--sage); }
+  .result-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 28px; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; transition: all 0.2s; border: 1px solid currentColor; cursor: pointer; white-space: nowrap; }
+  .btn-ink { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn-ink:hover { background: var(--sage); border-color: var(--sage); }
+  .btn-outline { background: transparent; color: var(--ink); border-color: var(--ink); }
+  .btn-outline:hover { background: var(--ink); color: #fff; }
+
+  .cart-pill { position: fixed; bottom: 20px; right: 20px; background: var(--ink); color: #fff; padding: 14px 22px; border-radius: 999px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; z-index: 50; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: transform 0.2s; }
+  .cart-pill:hover { transform: scale(1.04); background: var(--sage); }
+  .cart-pill .num { background: var(--sage); color: #fff; border-radius: 999px; min-width: 22px; height: 22px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+
+  .mini-foot { background: var(--ink); color: rgba(250,246,238,0.6); padding: 28px clamp(20px, 4vw, 56px); font-size: 12px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .mini-foot a { color: rgba(250,246,238,0.85); }
+  .mini-foot a:hover { color: var(--sage); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="back"><span>←</span> <span>Back to HomeOften</span></a>
+  <a href="index.html" class="logo">Home<span class="logo-dot">Often</span></a>
+  <span></span>
+</header>
+<div class="progress-bar"><div id="progressBar"></div></div>
+
+<main class="wrap">
+
+  <section id="quizIntro">
+    <div class="quiz-eyebrow" id="introEyebrow"></div>
+    <h1 class="quiz-title" id="introTitle"></h1>
+    <p class="quiz-lead" id="introLead"></p>
+    <button class="quiz-start" id="startBtn">Start Quiz →</button>
+  </section>
+
+  <section id="quizStep" hidden>
+    <div class="quiz-step">
+      <div class="step-meta" id="stepMeta"></div>
+      <h2 class="quiz-q" id="stepQ"></h2>
+      <div class="quiz-options" id="stepOptions"></div>
+      <button class="quiz-back" id="stepBack" hidden>← back</button>
+    </div>
+  </section>
+
+  <section id="quizResult" hidden>
+    <div class="result">
+      <span class="result-tag">Your Match</span>
+      <h2 class="result-title" id="resultTitle"></h2>
+      <p class="result-why" id="resultWhy"></p>
+      <div class="result-grid" id="resultGrid"></div>
+      <div class="result-actions">
+        <button class="btn btn-ink" id="addAllBtn">Add All 3 to Bag</button>
+        <a href="index.html#quizzes" class="btn btn-outline">Try another quiz</a>
+        <button class="btn btn-outline" id="retakeBtn">Retake this one</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="quizMissing" hidden>
+    <h1 class="quiz-title">Quiz not found.</h1>
+    <p class="quiz-lead">Pick one from the homepage.</p>
+    <a href="index.html#quizzes" class="quiz-start" style="text-decoration:none;display:inline-block;">Back to quizzes</a>
+  </section>
+
+</main>
+
+<a class="cart-pill" id="cartPill">Bag <span class="num" id="cartNum">0</span></a>
+
+<footer class="mini-foot">
+  <span>© 2026 HomeOften · [Company Name] · [Street Address, City, State ZIP]</span>
+  <span><a href="shop.html">Shop</a> · <a href="index.html#bundles">Bundles</a> · <a href="index.html#help">Help</a></span>
+</footer>
+
+<script src="data.js"></script>
+<script>
+  const { CATALOG, QUIZZES } = window.HOMEOFTEN;
+  const fmt = (n) => '$' + n.toFixed(2);
+
+  const params = new URLSearchParams(location.search);
+  const slug = params.get('slug') || '';
+  const quiz = QUIZZES.find(q => q.slug === slug);
+
+  if (!quiz) {
+    document.getElementById('quizIntro').hidden = true;
+    document.getElementById('quizMissing').hidden = false;
+  } else {
+    document.getElementById('introEyebrow').textContent = quiz.eyebrow;
+    document.getElementById('introTitle').textContent = quiz.title;
+    document.getElementById('introLead').textContent = quiz.lead;
+  }
+
+  let step = -1;
+  const answers = [];
+  const total = quiz ? quiz.questions.length : 0;
+
+  function setProgress() {
+    const pct = step < 0 ? 0 : step >= total ? 100 : (step / total) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  }
+
+  function showStep() {
+    document.getElementById('quizIntro').hidden = true;
+    document.getElementById('quizResult').hidden = true;
+    document.getElementById('quizStep').hidden = false;
+    const q = quiz.questions[step];
+    document.getElementById('stepMeta').textContent = `Question ${step + 1} of ${total}`;
+    document.getElementById('stepQ').textContent = q.question;
+    const optsEl = document.getElementById('stepOptions');
+    optsEl.innerHTML = q.options.map(o => `
+      <button class="quiz-option" type="button" data-val="${o.value}">
+        <span class="quiz-option-emoji">${o.emoji || ''}</span>
+        <span>${o.label}</span>
+      </button>
+    `).join('');
+    optsEl.querySelectorAll('.quiz-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        answers[step] = btn.dataset.val;
+        step++;
+        if (step >= total) showResult();
+        else { showStep(); setProgress(); }
+      });
+    });
+    document.getElementById('stepBack').hidden = step === 0;
+    setProgress();
+  }
+
+  function showResult() {
+    document.getElementById('quizStep').hidden = true;
+    document.getElementById('quizResult').hidden = false;
+    setProgress();
+    const candidates = [
+      answers.slice(0, 2).join('-'),
+      answers[0] + '-default',
+      'default',
+    ];
+    let outcome = null;
+    for (const k of candidates) {
+      if (quiz.outcomes[k]) { outcome = quiz.outcomes[k]; break; }
+    }
+    if (!outcome) outcome = quiz.outcomes.default;
+    document.getElementById('resultTitle').textContent = outcome.headline;
+    document.getElementById('resultWhy').textContent = outcome.why;
+    const grid = document.getElementById('resultGrid');
+    grid.innerHTML = outcome.skus.map(sku => {
+      const p = CATALOG[sku];
+      if (!p) return '';
+      return `
+        <a class="result-card" href="shop.html">
+          <div class="result-card-img"><img src="${p.image}" alt="${p.name}"></div>
+          <div class="result-card-body">
+            <div class="result-card-cat">${p.section}</div>
+            <div class="result-card-name">${p.name}</div>
+            <div class="result-card-price">${fmt(p.price)}</div>
+          </div>
+        </a>
+      `;
+    }).join('');
+    document.getElementById('addAllBtn').onclick = () => {
+      outcome.skus.forEach(sku => {
+        const p = CATALOG[sku];
+        if (!p) return;
+        const cart = JSON.parse(sessionStorage.getItem('homeoften_cart') || '[]');
+        const existing = cart.find(l => l.sku === sku && !l.bundleId);
+        if (existing) existing.qty += 1;
+        else cart.push({ sku, name: p.name, section: p.section, price: p.price, qty: 1, bundleId: null, image: p.image });
+        sessionStorage.setItem('homeoften_cart', JSON.stringify(cart));
+      });
+      renderCartPill();
+      window.location.href = 'checkout.html';
+    };
+  }
+
+  document.getElementById('startBtn').addEventListener('click', () => { if (!quiz) return; step = 0; showStep(); });
+  document.getElementById('stepBack').addEventListener('click', () => { if (step > 0) { step--; showStep(); } });
+  document.getElementById('retakeBtn').addEventListener('click', () => {
+    step = -1; answers.length = 0;
+    document.getElementById('quizResult').hidden = true;
+    document.getElementById('quizIntro').hidden = false;
+    setProgress();
+  });
+
+  function renderCartPill() {
+    const cart = JSON.parse(sessionStorage.getItem('homeoften_cart') || '[]');
+    document.getElementById('cartNum').textContent = cart.reduce((a, l) => a + l.qty, 0);
+  }
+  document.getElementById('cartPill').addEventListener('click', () => window.location.href = 'index.html');
+  renderCartPill();
+  setProgress();
+</script>
+</body>
+</html>
