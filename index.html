@@ -759,11 +759,101 @@
     const msg = document.getElementById('newsletterMsg');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.style.color = 'var(--err)'; msg.textContent = 'Please enter a valid email.'; return; }
     msg.style.color = 'var(--ok)';
-    msg.textContent = "You're on the list — code coming.";
+    msg.textContent = "You're on the list — use code WELCOME10 for 10% off.";
     document.getElementById('newsletterEmail').value = '';
   });
 
   renderCart();
 </script>
+
+<!-- ───────── Exit-intent email capture ───────── -->
+<style>
+  .xpop-scrim { position: fixed; inset: 0; background: rgba(42,40,35,0.6); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 120; }
+  .xpop-scrim.open { opacity: 1; pointer-events: auto; }
+  .xpop { position: fixed; z-index: 121; left: 50%; top: 50%; transform: translate(-50%, -46%); width: min(440px, calc(100vw - 32px)); background: var(--paper); border: 1px solid var(--line); box-shadow: 0 30px 70px -20px rgba(42,40,35,0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s cubic-bezier(.2,.7,.2,1); }
+  .xpop.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+  .xpop-close { position: absolute; top: 12px; right: 14px; font-size: 24px; line-height: 1; color: var(--text-faint); background: none; border: 0; cursor: pointer; z-index: 1; padding: 4px; }
+  .xpop-close:hover { color: var(--ink); }
+  .xpop-inner { padding: clamp(32px, 5vw, 46px) clamp(26px, 4vw, 40px); text-align: center; }
+  .xpop-eyebrow { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 12px; }
+  .xpop-title { font-family: var(--serif); font-variation-settings: 'opsz' 144, 'wght' 500, 'SOFT' 30; font-size: clamp(28px, 4.5vw, 38px); line-height: 1.02; letter-spacing: -0.015em; color: var(--ink); margin-bottom: 12px; }
+  .xpop-sub { font-size: 14.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 22px; }
+  .xpop-form { display: flex; flex-direction: column; gap: 10px; }
+  .xpop-form input { padding: 14px 16px; background: var(--bg); border: 1.5px solid var(--line); font: inherit; font-size: 14px; color: var(--ink); text-align: center; }
+  .xpop-form input:focus { outline: none; border-color: var(--sage); }
+  .xpop-form button { padding: 14px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; border: 1px solid var(--ink); cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .xpop-form button:hover { background: var(--sage); border-color: var(--sage); }
+  .xpop-msg { font-size: 12.5px; min-height: 16px; margin-top: 10px; color: var(--err); }
+  .xpop-dismiss { margin-top: 14px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); background: none; border: 0; cursor: pointer; }
+  .xpop-dismiss:hover { color: var(--ink); }
+  .xpop-code { font-family: var(--serif); font-variation-settings: 'opsz' 72, 'wght' 600; font-size: 30px; letter-spacing: 0.1em; color: var(--sage); background: var(--bg); border: 1.5px dashed var(--sage); padding: 16px; margin-bottom: 14px; }
+  .xpop-copy { width: 100%; padding: 13px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; border: 1px solid var(--ink); cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .xpop-copy:hover, .xpop-copy.copied { background: var(--sage); border-color: var(--sage); }
+  .xpop-shop { display: inline-block; margin-top: 16px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); border-bottom: 1.5px solid currentColor; padding-bottom: 2px; }
+  .xpop-shop:hover { color: var(--sage); }
+</style>
+<div class="xpop-scrim" id="xpopScrim"></div>
+<aside class="xpop" id="xpop" role="dialog" aria-modal="true" aria-labelledby="xpopTitle">
+  <button class="xpop-close" id="xpopClose" aria-label="Close">&times;</button>
+  <div class="xpop-inner" id="xpopStep1">
+    <div class="xpop-eyebrow">Before you go</div>
+    <h2 class="xpop-title" id="xpopTitle">Here's 10% off.</h2>
+    <p class="xpop-sub">Enter your email and we'll unlock a code for 10% off your first order.</p>
+    <form class="xpop-form" id="xpopForm" novalidate>
+      <input type="email" id="xpopEmail" placeholder="you@example.com" required autocomplete="email" aria-label="Email address">
+      <button type="submit">Get my code</button>
+    </form>
+    <div class="xpop-msg" id="xpopMsg"></div>
+    <button class="xpop-dismiss" id="xpopDismiss" type="button">No thanks, I'll pay full price</button>
+  </div>
+  <div class="xpop-inner" id="xpopStep2" hidden>
+    <div class="xpop-eyebrow">You're in</div>
+    <h2 class="xpop-title">Your code is ready.</h2>
+    <p class="xpop-sub">Use this code at checkout for 10% off your first order.</p>
+    <div class="xpop-code" id="xpopCode">WELCOME10</div>
+    <button class="xpop-copy" id="xpopCopy" type="button">Copy code</button>
+    <a class="xpop-shop" href="shop.html">Start shopping &rarr;</a>
+  </div>
+</aside>
+<script>
+(function () {
+  const KEY = 'homeoften_xpop_seen';
+  const scrim = document.getElementById('xpopScrim');
+  const pop = document.getElementById('xpop');
+  let opened = false, armed = false;
+  setTimeout(() => { armed = true; }, 4000);
+  function open() {
+    if (opened || !armed || sessionStorage.getItem(KEY)) return;
+    opened = true;
+    sessionStorage.setItem(KEY, '1');
+    scrim.classList.add('open');
+    pop.classList.add('open');
+  }
+  function close() { scrim.classList.remove('open'); pop.classList.remove('open'); }
+  document.addEventListener('mouseout', e => { if (!e.relatedTarget && e.clientY <= 0) open(); });
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) setTimeout(open, 30000);
+  document.getElementById('xpopClose').addEventListener('click', close);
+  document.getElementById('xpopDismiss').addEventListener('click', close);
+  scrim.addEventListener('click', close);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  document.getElementById('xpopForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = document.getElementById('xpopEmail').value.trim();
+    const msg = document.getElementById('xpopMsg');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Please enter a valid email.'; return; }
+    msg.textContent = '';
+    document.getElementById('xpopStep1').hidden = true;
+    document.getElementById('xpopStep2').hidden = false;
+  });
+  document.getElementById('xpopCopy').addEventListener('click', () => {
+    const btn = document.getElementById('xpopCopy');
+    if (navigator.clipboard) navigator.clipboard.writeText('WELCOME10').catch(() => {});
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy code'; btn.classList.remove('copied'); }, 2000);
+  });
+})();
+</script>
+
 </body>
 </html>
